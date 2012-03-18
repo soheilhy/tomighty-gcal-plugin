@@ -98,11 +98,15 @@ public class GoogleCalendarPlugin implements Plugin {
                 return;
             }
 
+            Time time = message.getTime();
+            if (time.isZero() && lastStartTimerDate == null) {
+                return;
+            }
+
             String projectName =
                     JOptionPane.showInputDialog(
                             "Which project were you working on?");
 
-            Time time = message.getTime();
             Date endDate = new Date();
             Date startDate = lastStartTimerDate != null ? lastStartTimerDate :
                     (new Date(endDate.getTime() -
@@ -110,10 +114,6 @@ public class GoogleCalendarPlugin implements Plugin {
             logger.info("GCAL: " + startDate + "," +
                     new Date() + "," + projectName + "," +
                     (phase == Phase.BREAK ? " BREAK " : " WORK "));
-
-            if (time.isZero() && lastStartTimerDate == null) {
-                return;
-            }
 
             Event event = new Event();
             event.setSummary("WORK " + projectName);
