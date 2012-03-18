@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.tomighty.Phase;
 import org.tomighty.bus.Bus;
 import org.tomighty.bus.Subscriber;
+import org.tomighty.bus.messages.timer.TimerStarted;
 import org.tomighty.bus.messages.timer.TimerStopped;
 import org.tomighty.config.Directories;
 import org.tomighty.plugin.Plugin;
@@ -70,6 +71,25 @@ public class GoogleCalendarPlugin implements Plugin {
 
     private static com.google.api.services.calendar.Calendar client;
 
+    private Date lastStartTimerDate;
+
+    class StartTimeSubscriber implements Subscriber<TimerStarted> {
+
+
+        @Override
+        public void receive(TimerStarted message) {
+            Phase phase = message.getPhase();
+            if (phase == Phase.BREAK) {
+                return;
+            }
+            lastStartTimerDate = new Date();
+            logger.info("GCAL Start: " + lastStartTimerDate + "," +
+                    (phase == Phase.BREAK ? " BREAK " : " WORK "));
+
+        }
+
+    }
+
     class StopTimeSubscriber implements Subscriber<TimerStopped> {
         @Override
         public void receive(TimerStopped message) {
@@ -83,15 +103,18 @@ public class GoogleCalendarPlugin implements Plugin {
                             "Which project were you working on?");
 
             Time time = message.getTime();
-            if (time.isZero()) {
-                return;
-            }
             Date endDate = new Date();
-            Date startDate = new Date(endDate.getTime() -
-                    (time.minutes() * 60 + time.seconds()) * 1000);
-            logger.debug("GCAL: " + startDate + "," +
+            Date startDate = lastStartTimerDate != null ? lastStartTimerDate :
+                    (new Date(endDate.getTime() -
+                    (time.minutes() * 60 + time.seconds()) * 1000));
+            logger.info("GCAL: " + startDate + "," +
                     new Date() + "," + projectName + "," +
                     (phase == Phase.BREAK ? " BREAK " : " WORK "));
+
+            if (time.isZero() && lastStartTimerDate == null) {
+                return;
+            }
+
             Event event = new Event();
             event.setSummary("WORK " + projectName);
             DateTime start = new DateTime(startDate,
@@ -101,6 +124,8 @@ public class GoogleCalendarPlugin implements Plugin {
             DateTime end = new DateTime(endDate,
                     TimeZone.getTimeZone("UTC"));
             event.setEnd(new EventDateTime().setDateTime(end));
+
+            lastStartTimerDate = null;
 
             try {
                 client.events().insert(tomightyCalId, event).execute();
@@ -146,6 +171,7 @@ public class GoogleCalendarPlugin implements Plugin {
 
     @PostConstruct
     public void initialize() {
+        bus.subscribe(new StartTimeSubscriber(), TimerStarted.class);
         bus.subscribe(new StopTimeSubscriber(), TimerStopped.class);
     }
 }
