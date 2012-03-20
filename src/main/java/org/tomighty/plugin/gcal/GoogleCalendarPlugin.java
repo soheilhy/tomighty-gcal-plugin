@@ -72,6 +72,7 @@ public class GoogleCalendarPlugin implements Plugin {
     private static com.google.api.services.calendar.Calendar client;
 
     private Date lastStartTimerDate;
+    private String projectName = "";
 
     class StartTimeSubscriber implements Subscriber<TimerStarted> {
 
@@ -91,6 +92,7 @@ public class GoogleCalendarPlugin implements Plugin {
     }
 
     class StopTimeSubscriber implements Subscriber<TimerStopped> {
+
         @Override
         public void receive(TimerStopped message) {
             Phase phase = message.getPhase();
@@ -103,9 +105,9 @@ public class GoogleCalendarPlugin implements Plugin {
                 return;
             }
 
-            String projectName =
+            projectName =
                     JOptionPane.showInputDialog(
-                            "Which project were you working on?");
+                            "Which project were you working on?", projectName);
 
             Date endDate = new Date();
             Date startDate = lastStartTimerDate != null ? lastStartTimerDate :
