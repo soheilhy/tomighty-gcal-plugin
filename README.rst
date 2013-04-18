@@ -29,6 +29,20 @@ folder create ``client_secrets.json`` with the following content:
 To fill the ``client_id`` and ``client_secret`` fields you'd need to create a
 google application at https://code.google.com/apis/console.
 
+Create a new project and provide a name that you can easily recognize later. Select the service that you want to use.
+In our case we need access to the Calendar API.
+
+1. Click on the status toggle to enable the service.
+2. Click the API Access link in the top navigation on the left hand side.
+3. Click the blue banner 'Create an OAuth 2.0 client ID..'.
+    Provide the information for the Product name. You can omit all the other fields like Product logo and Homepage URL.
+4. Click the Next Button.
+5. Select the 'Installed application' option and leave the type at 'Other'.
+6. Click the 'Create Client ID' button.
+
+Now you will find the required information in the middle of the screen. Copy the ``Client ID`` and the ``Client secret`` to the
+``client_secrets.json``.
+
 Then build the project:
 
 ::
