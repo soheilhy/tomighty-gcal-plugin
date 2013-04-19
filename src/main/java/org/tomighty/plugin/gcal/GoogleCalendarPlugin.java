@@ -40,7 +40,7 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson.JacksonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Calendar;
@@ -73,6 +73,11 @@ public class GoogleCalendarPlugin implements Plugin {
 
     private Date lastStartTimerDate;
     private String projectName = "";
+
+    @Override
+    public String getName() {
+        return "Google Calendar Integration";
+    }
 
     class StartTimeSubscriber implements Subscriber<TimerStarted> {
 
@@ -148,8 +153,8 @@ public class GoogleCalendarPlugin implements Plugin {
                     HTTP_TRANSPORT, JSON_FACTORY, new LocalServerReceiver(),
                     Arrays.asList(CalendarScopes.CALENDAR), store);
             // set up global Calendar instance
-            client = com.google.api.services.calendar.Calendar.builder(
-                    HTTP_TRANSPORT, JSON_FACTORY)
+            client = new com.google.api.services.calendar.Calendar.Builder(
+                    HTTP_TRANSPORT, JSON_FACTORY, credential)
                     .setApplicationName("Tomighty-GCal/1.0")
                     .setHttpRequestInitializer(credential).build();
             CalendarList list = client.calendarList().list().execute();
